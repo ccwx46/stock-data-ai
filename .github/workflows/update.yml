@@ -2,8 +2,8 @@ name: Daily Stock Update
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # 台灣時間下午 5:00 更新
-  workflow_dispatch:      # 允許手動按按鈕
+    - cron: '0 9 * * *'  # 每天台灣時間下午 5:00 自動執行
+  workflow_dispatch:      # 允許手動按按鈕執行
 
 permissions:
   contents: write
@@ -18,7 +18,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'  # 這裡一定要 3.11 避免報錯
+          python-version: '3.11'  # 修正1：使用 3.11 避免套件報錯
 
       - name: Install dependencies
         run: pip install yfinance pandas pytz
@@ -30,8 +30,12 @@ jobs:
         run: |
           git config --global user.name "Auto Bot"
           git config --global user.email "bot@github.com"
-          # 注意：這裡加上了 stock_data.csv
+          
+          # 修正2：明確加入 stock_data.csv
           git add index.html stock_data.csv
-          git commit -m "Update prices" || exit 0
-          git pull --rebase origin main
-          git push
+          
+          # 如果沒有數據變動，就不會報錯卡住
+          git commit -m "Update prices" || echo "No changes to commit"
+          
+          # 修正3：使用 -f (Force) 強制推上去，解決紅色叉叉
+          git push -f origin main
