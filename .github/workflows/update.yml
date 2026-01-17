@@ -2,8 +2,8 @@ name: Daily Stock Update
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # 每天台灣時間下午 5:00 更新
-  workflow_dispatch:      # 允許手動執行
+    - cron: '0 9 * * *'  # 台灣時間下午 5:00 更新
+  workflow_dispatch:      # 允許手動按按鈕
 
 permissions:
   contents: write
@@ -12,16 +12,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.11'  # 這裡一定要 3.11 避免報錯
 
-      - name: Install libraries
-        run: pip install yfinance pandas pytz lxml
+      - name: Install dependencies
+        run: pip install yfinance pandas pytz
 
       - name: Run script
         run: python main.py
@@ -30,6 +30,8 @@ jobs:
         run: |
           git config --global user.name "Auto Bot"
           git config --global user.email "bot@github.com"
-          git add index.html
+          # 注意：這裡加上了 stock_data.csv
+          git add index.html stock_data.csv
           git commit -m "Update prices" || exit 0
+          git pull --rebase origin main
           git push
